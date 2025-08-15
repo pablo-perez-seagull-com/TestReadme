@@ -1,0 +1,2015 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Codelab to use BTC UI</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+    <style>
+        .copy-button {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .copy-button:hover {
+            background-color: #45a049;
+        }
+
+        pre {
+            position: relative;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeBlocks = document.querySelectorAll('code[language="language-tsx"], code[language="language-bash"]');
+
+            codeBlocks.forEach((codeBlock) => {
+                const copyButton = document.createElement('button');
+                copyButton.innerText = 'Copy';
+                copyButton.classList.add('copy-button');
+
+                copyButton.addEventListener('click', function() {
+                    const codeText = codeBlock.innerText;
+                    navigator.clipboard.writeText(codeText).then(function() {
+                        copyButton.innerText = 'Copied!';
+
+                        setTimeout(() => {
+                            copyButton.innerText = 'Copy';
+                        }, 2000);
+                    }).catch(function(err) {
+                        console.error('Failed to copy code: ', err);
+                    });
+                });
+
+                const preElement = codeBlock.parentElement;
+                preElement.style.position = 'relative'; // Ensure the button is positioned correctly
+                preElement.insertBefore(copyButton, codeBlock);
+            });
+        });
+    </script>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  codelab-ga4id=""
+                  id="BarTender Codelab"
+                  title="Codelab to use BTC UI"
+                  environment="web"
+                  feedback-link="https://www.github.com/ucl-casa-ce/Workshop Repoistory">
+    
+      <google-codelab-step label="Introduction &amp; basic concepts" duration="3">
+        <p>In this tutorial you will learn how to create a weather app using bt-ui-apps monorepo project.</p>
+<p>This weather app will request information from public api and will display the minimum and maximum temperature for a week starting today.</p>
+<p>Preview</p>
+<p class="image-container"><img alt="Screenshot" src="img/1d628556c756fb33.png"></p>
+<h2 is-upgraded>Clonning tutorial repo:</h2>
+<pre><code language="language-bash" class="language-bash">git clone git@github.com:tierconnect/bt-ui-apps.git
+</code></pre>
+<p>Open directory bt-ui-apps</p>
+<pre><code language="language-bash" class="language-bash">cd bt-ui-apps
+</code></pre>
+<pre><code language="language-bash" class="language-bash">git checkout feature/tutorial
+</code></pre>
+<h2 is-upgraded>🚀 Resources</h2>
+<ul>
+<li><a href="https://tailwindcss.com/" target="_blank">Tailwind CSS</a></li>
+<li><a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a></li>
+<li><a href="https://react.dev/" target="_blank">React</a></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Generate Weather App" duration="10">
+        <h2 is-upgraded>2.1 Prepare the Environment</h2>
+<p>To set up your environment, execute the following commands inside your repo recently cloned:</p>
+<pre><code language="language-bash" class="language-bash">npm install
+</code></pre>
+<pre><code language="language-bash" class="language-bash">nx run-many -t build
+</code></pre>
+<aside class="warning"><p><strong>️Note:<br></strong></p>
+<p>If it fail execute again:</p>
+<pre><code language="language-bash" class="language-bash">nx run-many -t build 
+</code></pre>
+</aside>
+<h2 is-upgraded>2.2 Generate your application</h2>
+<pre><code language="language-bash" class="language-bash">nx generate @btc/generators:app-generator weather
+</code></pre>
+<p>Need to build shell in order to include new app:</p>
+<pre><code language="language-bash" class="language-bash">nx build shell
+</code></pre>
+<h2 is-upgraded><strong>Explanation:</strong></h2>
+<p><strong>nx generate:</strong> The Nx command to run code generators.</p>
+<p><strong>@btc/generators:app-generator:</strong> Specifies the generator to use. This is one of the project&#39;s custom Nx generators</p>
+<p><strong>(@btc/generators)</strong> that creates applications with specific configurations.</p>
+<p><strong>weather:</strong> The name of the new application being generated.</p>
+<p>Open <code>tsconfig.base.json</code> and add the recently created module:</p>
+<pre><code> {
+  &#34;compileOnSave&#34;: false,
+  &#34;compilerOptions&#34;: {
+    // ... other options
+    &#34;paths&#34;: {
+      // ... existing paths
+      &#34;weather/Module&#34;: [&#34;apps/weather/src/remote-entry.ts&#34;]
+    }
+  }
+}
+      
+</code></pre>
+<h2 is-upgraded><strong>Explanation:</strong></h2>
+<p><strong>tsconfig.base.json:</strong> This file configures the base TypeScript compiler options for the entire workspace.</p>
+<p><strong>paths:</strong> This section defines path mapping aliases. It allows you to import modules using shorter aliases instead of relative paths.</p>
+<p><strong>&#34;weather/Module&#34;:</strong> This is the alias you will use to import the main module of your weather application.</p>
+<p><strong>[&#34;apps/weather/src/remote-entry.ts&#34;]:</strong> This is the actual file path that the alias maps to. In Module Federation setups, remote-entry.ts often serves as the entry point for exposing modules from a remote application.</p>
+<h2 is-upgraded>2.3 Update shell&#39;s apps/shell/src/app/app.tsx file</h2>
+<p>The shell application needs to know how to load and display the weather application. This involves dynamically importing the module and adding a route for it.</p>
+<h2 is-upgraded>2.3.1 Import new app module</h2>
+<p>Add the following line to dynamically import the weather module:</p>
+<pre><code language="language-tsx" class="language-tsx">const WeatherApp = lazy(() =&gt; import(&#39;weather/Module&#39;));
+</code></pre>
+<h2 is-upgraded><strong>Explanation</strong>:</h2>
+<p><strong>import(‘weather/Module&#39;):</strong> This is a dynamic import statement using the path alias defined earlier in tsconfig.base.json. It tells the build system to load the weather/Module asynchronously at runtime.</p>
+<p><strong>lazy(() =&gt; ...):</strong> This is React&#39;s lazy function, which enables code splitting. The weather component will only be loaded when it&#39;s needed (e.g., when the route is accessed), improving initial load performance. [^2]</p>
+<p><strong>const weather:</strong> This creates a React component (weather) that represents the dynamically loaded module.</p>
+<h2 is-upgraded>2.3.2 Update Routes</h2>
+<p>Next, integrate the weather component into the application&#39;s routing system.</p>
+<pre><code language="language-tsx" class="language-tsx">    &lt;Routes&gt;
+  ...
+  &lt;Route path=&#34;/weather/*&#34; element={&lt;WeatherApp /&gt;} /&gt;
+&lt;/Routes&gt;
+</code></pre>
+<h2 is-upgraded><strong>Explanation:</strong></h2>
+<p><strong>&lt; Routes &gt; and &lt; Route &gt;:</strong> These components are from react-router-dom and define the application&#39;s routing structure.</p>
+<p><strong>path=&#34;/weather/*&#34;:</strong> This specifies the URL path where the weather component will be displayed. The /* indicates that this route can also handle nested routes within the weather app if it has its own internal routing.</p>
+<p><strong>element={</strong>}: This specifies which React component to render when the path matches.</p>
+<h2 is-upgraded>2.4 Build your new app</h2>
+<p>Now that the application is generated and configured, build both the new weather app and the main shell application to ensure everything integrates correctly.</p>
+<pre><code language="language-bash" class="language-bash"># Build all the apps
+nx run-many -t build
+</code></pre>
+<h2 is-upgraded><strong>Explanation:</strong></h2>
+<p><strong>nx build weather:</strong> This command builds the weather application. In a Module Federation context, this makes its modules available to be consumed by other applications (like the shell).</p>
+<p><strong>nx build shell:</strong> This builds the main shell application, which acts as the host that will consume the weather module.</p>
+<h2 is-upgraded>2.5 Run/Serve Shell</h2>
+<pre><code language="language-bash" class="language-bash">nx serve shell
+</code></pre>
+<h2 is-upgraded><strong>Explanation:</strong></h2>
+<p><strong>nx serve shell:</strong> This starts a development server for the shell application. It typically includes features like hot module replacement (HMR) for live updates during development.</p>
+<p>Open your browser at <a href="http://localhost:4200/weather" target="_blank">http://localhost:4200/weather</a>. You should be able to see the new app with the text:</p>
+<p class="image-container"><img alt="Screenshot" src="img/414814936b56d31c.png"></p>
+<p>If everything is configured correctly, navigating to /weather will trigger the lazy loading of the weather module, and its content (likely just &#34;weather&#34; initially) will be displayed within the shell application.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Adding base components" duration="5">
+        <p>The following components are a foundation of the weather app:</p>
+<h2 is-upgraded>3.1 Add/Update the following empty components</h2>
+<h3 is-upgraded>3.1.1 apps/weather/src/app/layout.tsx</h3>
+<pre><code language="language-tsx" class="language-tsx">/**
+ * Props interface for the Layout component.
+ * - onSelectDay: Callback function invoked when a day is selected,
+ *   receives the selected day&#39;s date string (e.g., &#39;2025-08-07&#39;).
+ */
+interface LayoutI {
+  onSelectDay: (day: string) =&gt; void;
+}
+
+/**
+ * Layout component that displays weather information for a selected day,
+ * allowing the user to select different days from a dropdown.
+ *
+ * @param props - Properties including onSelectDay callback.
+ * @returns JSX element rendering the weather details or a loading state.
+ */
+export function Layout(props: LayoutI) {
+  // Render component once dayData is available
+  return (
+    &lt;div className=&#34;bg-black w-full h-full flex items-center justify-center py-10 relative mx-auto&#34;&gt;
+      &lt;div className=&#34;flex flex-col items-center justify-center text-white w-full px-4 space-y-4&#34;&gt;
+        {/* Display min temperature for the selected day */}
+        &lt;div className=&#34;text-sm text-white/100 tracking-wide font-bold&#34;&gt;
+          Daily minimum temperature: 5 °C
+        &lt;/div&gt;
+        {/* Display max temperature for the selected day */}
+        &lt;div className=&#34;text-sm text-white/100 tracking-wide font-bold&#34;&gt;
+          Daily maximum temperature: 25 °C
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Layout;
+</code></pre>
+<h2 is-upgraded>3.1.2 apps/weather/src/app/app.tsx</h2>
+<pre><code language="language-tsx" class="language-tsx">import Layout from &#34;./layout&#34;;
+import { Routes, Route } from &#39;react-router-dom&#39;;
+
+
+export function App() {
+  return (
+    &lt;Routes&gt;
+      {/* Root route: shows the main layout and passes the day selection handler */}
+      &lt;Route
+        path=&#34;/&#34;
+        element={&lt;Layout onSelectDay={()=&gt;{}} /&gt;}
+      /&gt;
+
+      {/* Dynamic route for a specific forecast day, e.g., &#34;/2025-06-27&#34; */}
+      &lt;Route
+        path=&#34;/:forecastDay&#34;
+        element={&lt;Layout onSelectDay={()=&gt;{}} /&gt;}
+      /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>Refresh your browser, you should be able to see this screen:</p>
+<p class="image-container"><img alt="Screenshot" src="img/4645c3de82430253.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Interfaces for weather app" duration="5">
+        <h2 is-upgraded>Create interface at apps/weather/src/interfaces/forecast.interface.ts</h2>
+<p>We use TypeScript interfaces to define the shape and structure of the weather data received from the API. These interfaces provide type safety and clarity, ensuring that data conforms to expected formats, which makes development more predictable and less prone to errors.</p>
+<p>The interfaces encapsulate details such as daily and hourly forecast data, current weather conditions, and units of measurement. By explicitly defining these structures, we facilitate reliable data handling, transformation, and presentation across the application.</p>
+<pre><code language="language-tsx" class="language-tsx">export interface WeatherApiResponseI {
+  latitude: number;
+  longitude: number;
+  generationtime_ms: number;
+  utc_offset_seconds: number;
+  timezone: string;
+  timezone_abbreviation: string;
+  elevation: number;
+
+  current_weather_units: CurrentWeatherUnits;
+  current_weather: CurrentWeather;
+
+  hourly_units: HourlyUnits;
+  hourly: HourlyData;
+
+  daily_units: DailyUnits;
+  daily: DailyData;
+}
+
+export interface WeatherHourI {
+  key: string;
+  index: number;
+  time: string;
+  temperature: string | number;
+  humidity: string | number;
+  precipitation: string | number;
+  cloudCover: string | number;
+  windSpeed: string | number;
+  windDirection?: string | number;
+  isDay?: string | number;
+  weatherCode?: string | number;
+}
+
+// Current weather units info
+export interface CurrentWeatherUnits {
+  time: string;                       // e.g., ISO8601 string
+  interval: string;                   // e.g., &#34;seconds&#34;
+  temperature: string;                // e.g., &#34;°C&#34;
+  windspeed: string;                  // e.g., &#34;km/h&#34;
+  winddirection: string;              // e.g., &#34;°&#34;
+  is_day: string;                     // e.g., &#34;&#34; (or &#34;1&#34;/&#34;0&#34; possibly)
+  weathercode: string;                // e.g., &#34;wmo code&#34;
+}
+
+// Current weather data
+export interface CurrentWeather {
+  time: string;                       // ISO8601 string
+  interval: number;
+  temperature: number;
+  windspeed: number;
+  winddirection: number;
+  is_day: number;                     // 0 or 1
+  weathercode: number;                // Weather code as number
+}
+
+// Hourly units info
+export interface HourlyUnits {
+  time: string;
+  temperature_2m: string;
+  relative_humidity_2m: string;
+  precipitation: string;
+  cloudcover: string;
+  windspeed_10m: string;
+  apparent_temperature: string;
+}
+
+// Hourly forecast data
+export interface HourlyData {
+  time: string[];                     // Array of ISO timestamps
+  temperature_2m: number[];
+  relative_humidity_2m: number[];
+  precipitation: number[];
+  cloudcover: number[];
+  windspeed_10m: number[];
+  apparent_temperature: number[];
+  weathercode: number[];
+}
+
+// Daily units info
+export interface DailyUnits {
+  time: string;                       // e.g., &#34;iso8601&#34;
+  temperature_2m_max: string;
+  temperature_2m_min: string;
+  sunrise: string;                    // ISO8601
+  sunset: string;                     // ISO8601
+  apparent_temperature_min?: string;  // optional
+  apparent_temperature_max?: string;  // optional
+  wind_direction_10m_dominant?: string; // optional
+}
+
+// Daily forecast data
+export interface DailyData {
+  time: string[];                     // Array of date strings
+  temperature_2m_max: number[];
+  temperature_2m_min: number[];
+  sunrise: string[];
+  sunset: string[];
+  apparent_temperature_min?: number[];
+  apparent_temperature_max?: number[];
+  wind_direction_10m_dominant?: number[];
+  weathercode: number[];
+}
+
+export interface WeatherDayI {
+  key: string;
+  time: string;
+  temperature: {
+    min: number,
+    max: number,
+  };
+  elevation: number;
+  timezone: string;
+  sunrise: string;
+  sunriseTime: string;
+  sunset: string;
+  sunsetTime: string;
+}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Store for weather app" duration="5">
+        <h2 is-upgraded>Create store at apps/weather/src/stores/weather.store.ts</h2>
+<p>The Weather Store is a central state management solution built with reactive programming principles. It maintains the application&#39;s weather-related state, including:</p>
+<ul>
+<li>The weekly forecast (weekWeather)</li>
+<li>The currently selected day&#39;s weather (selectedDay)</li>
+<li>Loading states to manage asynchronous data fetching</li>
+<li>Units of measurement (e.g., Celsius or Fahrenheit)</li>
+</ul>
+<p>This store enables seamless sharing of weather data across multiple components, ensuring your UI always reflects the latest data and user interactions. It also handles persistence, so weather data can survive page reloads, providing a smoother user experience.</p>
+<pre><code language="language-tsx" class="language-tsx">import { StoreBase } from &#39;@btc/rx-stores&#39;;
+import { InsecureLocalStoragePersistence } from &#39;@btc/insecure-localstorage-persistence&#39;;
+import { WeatherDayI } from &#39;../interfaces/forecast.interface&#39;;
+
+/**
+ * Represents the state of the Weather Store.
+ */
+export type WeatherState = {
+  /** Indicates if weather data is currently being loaded */
+  loading: boolean;
+  /** Array of weather data for the week, or undefined if not loaded yet */
+  weekWeather: WeatherDayI[] | undefined;
+  /** The weather data for the currently selected day, or undefined if none selected */
+  selectedDay: WeatherDayI | undefined;
+  /** The units used for displaying temperature, e.g., &#34;°C&#34; or &#34;°F&#34; */
+  weatherUnits: string | undefined;
+};
+
+/**
+ * Store managing the weather data and UI state.
+ */
+export class WeatherStore extends StoreBase&lt;WeatherState&gt; {
+  /** Unique identifier for this store instance */
+  override storeId = &#39;weather&#39;;
+
+  /** Initial state of the store */
+  override state: WeatherState = {
+    loading: false,
+    weekWeather: undefined,
+    selectedDay: undefined,
+    weatherUnits: &#39;°C&#39;, // Default to Celsius
+  };
+
+  /** Persistence mechanism for storing state in local storage */
+  override persistence = new InsecureLocalStoragePersistence();
+
+  /** Timer ID for debounced or scheduled save operations (if used) */
+  override saveToPersistenceTimer = 0;
+
+  /**
+   * Constructor initializes the store and registers it.
+   */
+  constructor() {
+    super();
+    this.register();
+  }
+
+  /**
+   * Updates the weather forecast for the entire week.
+   * @param weekData - Array of WeatherDayI representing the week&#39;s weather
+   */
+  setWeekWeather = (weekData: WeatherDayI[]) =&gt; {
+    this.updateStateFn((state: WeatherState) =&gt; {
+      const newState = { ...state };
+      newState.weekWeather = weekData;
+      return [newState, [&#39;weekWeather&#39;]];
+    })();
+  };
+
+  /**
+   * Sets the currently selected day&#39;s weather data.
+   * @param day - WeatherDayI object for the selected day
+   */
+  setSelectedDay = (day: WeatherDayI) =&gt; {
+    this.updateStateFn((state: WeatherState) =&gt; {
+      const newState = { ...state };
+      newState.selectedDay = day;
+      return [newState, [&#39;selectedDay&#39;]];
+    })();
+  };
+}
+</code></pre>
+<p>Overall, the combination of well-typed data interfaces and a centralized, reactive store allows for scalable, maintainable, and predictable weather data management within the application.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Call an HTTP server" duration="10">
+        <h2 is-upgraded>6.1 Create API at apps/weather/src/api/forecast-api.ts</h2>
+<pre><code language="language-tsx" class="language-tsx">import {WeatherStore} from &#39;../stores/weather.store&#39;;
+import {
+  WeatherApiResponseI,
+  WeatherDayI,
+} from &#34;../interfaces/forecast.interface&#34;;
+import {AxiosHttpClient} from &#34;@btc/axios-http-client&#34;;
+
+/**
+ * Interface defining methods for fetching weather forecast data.
+ */
+export interface ForecastApiI {
+  /**
+   * Fetches weather data for the week.
+   * @returns Promise resolving to WeatherApiResponseI object.
+   */
+  getWeatherByWeek: () =&gt; Promise&lt;WeatherApiResponseI&gt;;
+}
+
+/**
+ * Class implementing ForecastApiI to interact with weather API.
+ */
+export class ForecastApi implements ForecastApiI {
+  // Instance of weather store to manage application state
+  private weatherStore = new WeatherStore();
+
+  // HTTP client configured for the Open-Meteo API
+  private apiClient = new AxiosHttpClient(&#39;https://api.open-meteo.com/v1/&#39;);
+
+  /**
+   * Fetches weather forecast data for the week and updates the store.
+   * @returns Promise resolving to WeatherApiResponseI object.
+   */
+  async getWeatherByWeek(): Promise&lt;WeatherApiResponseI&gt; {
+
+    // Make GET request to the forecast endpoint with parameters
+    const data = await this.apiClient.get&lt;WeatherApiResponseI&gt;(&#39;forecast&#39;, {
+      params: {
+        latitude: 25.7617, // Latitude for location (e.g., Miami)
+        longitude: -80.1918, // Longitude for location
+        current_weather: true, // fetch current weather data
+        hourly: &#39;temperature_2m,relative_humidity_2m,precipitation,cloudcover,weathercode,windspeed_10m,apparent_temperature&#39;, // Hourly data to fetch
+        daily: &#39;temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&#39;, // Daily data to fetch
+        timezone: &#39;America/New_York&#39;, // Timezone for data
+      },
+    });
+
+    // Adapt the raw API response to internal data format and update store
+    this.weatherStore.setWeekWeather(this.adaptExternalWeatherData(data));
+
+    // Return the raw API data
+    return data;
+  }
+
+  /**
+   * Transforms external API response data into internal WeatherDayI[] array.
+   * @param response - Raw data from weather API.
+   * @returns Array of WeatherDayI objects representing daily weather info.
+   */
+  private adaptExternalWeatherData(response: WeatherApiResponseI): WeatherDayI[] {
+    const weatherData: WeatherDayI[] = [];
+
+    // Loop through each daily time entry
+    (response?.daily?.time || []).forEach((dayTime: string, index: number) =&gt; {
+      const dayWeather: WeatherDayI = {
+        key: dayTime, // Unique key for the day (date string)
+        time: dayTime, // Date string
+        timezone: response.timezone, // Timezone info
+        elevation: response.elevation, // Elevation info
+        temperature: { // Min and Max temperatures for the day
+          min: response.daily.temperature_2m_min[index],
+          max: response.daily.temperature_2m_max[index],
+        },
+        sunrise: response.daily.sunrise[index], // Sunrise time
+        sunriseTime: response.daily.sunrise[index].slice(-5), // Extracted time portion
+        sunset: response.daily.sunset[index], // Sunset time
+        sunsetTime: response.daily.sunset[index].slice(-5), // Extracted time portion
+      };
+
+      // Append to the weather data array
+      weatherData.push(dayWeather as WeatherDayI);
+    });
+
+    // Return the array of daily weather data
+    return weatherData;
+  }
+}
+</code></pre>
+<h2 is-upgraded>Summary of forecast-api.ts:</h2>
+<ul>
+<li>Defines an interface ForecastApiI for fetching weather forecast data.</li>
+<li>Implements ForecastApi class with methods: <ul>
+<li><strong>getWeatherByWeek():</strong> fetches forecast data from an external API, updates the store, and manages loading states.</li>
+<li><strong>adaptExternalWeatherData():</strong> transforms raw API data into a structured format suitable for your app.</li>
+</ul>
+</li>
+<li>Uses AxiosHttpClient for making HTTP requests.</li>
+<li>Stores the data in WeatherStore for sharing across your app.</li>
+</ul>
+<h2 is-upgraded>6.2 Update apps/weather/src/app/app.tsx</h2>
+<p>Importings</p>
+<pre><code language="language-tsx" class="language-tsx">import {ForecastApi} from &#34;../api/forecast-api&#34;;
+import {useEffect} from &#34;react&#34;;
+</code></pre>
+<p>Inside app()</p>
+<pre><code language="language-tsx" class="language-tsx">const weatherApi = new ForecastApi();
+</code></pre>
+<pre><code language="language-tsx" class="language-tsx">useEffect(() =&gt; {
+  weatherApi.getWeatherByWeek();
+}, []);
+</code></pre>
+<h2 is-upgraded>app.tsx should look like the following:</h2>
+<pre><code language="language-tsx" class="language-tsx">import Layout from &#34;./layout&#34;;
+import { Routes, Route } from &#39;react-router-dom&#39;;
+import {ForecastApi} from &#34;../api/forecast-api&#34;;
+import {useEffect} from &#34;react&#34;;
+
+
+export function App() {
+  const weatherApi = new ForecastApi();
+  useEffect(() =&gt; {
+    weatherApi.getWeatherByWeek();
+  }, []);
+  return (
+    &lt;Routes&gt;
+      {/* Root route: shows the main layout and passes the day selection handler */}
+      &lt;Route
+        path=&#34;/&#34;
+        element={&lt;Layout onSelectDay={()=&gt;{}} /&gt;}
+      /&gt;
+
+      {/* Dynamic route for a specific forecast day, e.g., &#34;/2025-06-27&#34; */}
+      &lt;Route
+        path=&#34;/:forecastDay&#34;
+        element={&lt;Layout onSelectDay={()=&gt;{}} /&gt;}
+      /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>Refresh the browser, open developer tools and open network tab, you should see the request executed:</p>
+<p class="image-container"><img alt="Screenshot" src="img/27e2dc0d204fcb31.png"></p>
+<h2 is-upgraded>6.3 Integrate data with layout component</h2>
+<h2 is-upgraded>Component Overview</h2>
+<ul>
+<li>The Layout component displays weather information for a tailored date, along with a navigation UI to switch between days.</li>
+<li>It receives a callback onSelectDay prop to notify the parent when a user selects a different date.</li>
+<li>It retrieves the current forecast date from URL parameters (useParams) and fetches weather data from the store (WeatherStore).</li>
+</ul>
+<h3 is-upgraded>6.4 Update apps/weather/src/app/layout.tsx</h3>
+<pre><code language="language-tsx" class="language-tsx">import {useRef} from &#34;react&#34;;
+import { WeatherStore } from &#34;../stores/weather.store&#34;;
+import { useStoreState } from &#34;@btc/react-hooks&#34;;
+import { WeatherDayI } from &#34;../interfaces/forecast.interface&#34;;
+import { useParams } from &#34;react-router-dom&#34;;
+
+/**
+ * Props interface for the Layout component.
+ * - onSelectDay: Callback function invoked when a day is selected,
+ *   receives the selected day&#39;s date string (e.g., &#39;2025-08-07&#39;).
+ */
+interface LayoutI {
+    onSelectDay: (day: string) =&gt; void;
+}
+
+/**
+ * Layout component that displays weather information for a selected day,
+ * allowing the user to select different days from a dropdown.
+ *
+ * @param props - Properties including onSelectDay callback.
+ * @returns JSX element rendering the weather details or a loading state.
+ */
+export function Layout(props: LayoutI) {
+    const { onSelectDay } = props;
+    // Extract forecastDay parameter from URL
+    const { forecastDay } = useParams();
+
+    // Initialize weather store instance
+    const weatherStore = useRef(new WeatherStore());
+
+    // Access weekWeather state from the store
+    const { weekWeather } = useStoreState(weatherStore.current);
+
+    let dayData: WeatherDayI = {
+        elevation: 0,
+        key: &#34;&#34;,
+        sunrise: &#34;&#34;,
+        sunriseTime: &#34;&#34;,
+        sunset: &#34;&#34;,
+        sunsetTime: &#34;&#34;,
+        temperature: {max: 0, min: 0},
+        time: &#34;&#34;,
+        timezone: &#34;&#34;
+    };
+
+    // Find weather data for the selected or default day
+    if (weekWeather?.length) {
+        if (forecastDay) {
+            dayData = weekWeather.find(item =&gt; item.key === forecastDay) ?? weekWeather[0];
+        } else {
+            // Default to the first item if forecastDay isn&#39;t provided
+            dayData = weekWeather[0];
+        }
+    }
+    const isToday = (date: string) =&gt; {
+        return date === dayData.time;
+    }
+    const convertReadableDate = (dateString: string) =&gt; {
+        const [year, month, day] = dateString.split(&#39;-&#39;).map(Number);
+        // Create date in local timezone
+        const date = new Date(year, month - 1, day);
+        const options = { month: &#39;short&#39;, day: &#39;numeric&#39; } as const;
+        return date.toLocaleString(&#39;en-US&#39;, options).replace(&#39; &#39;, &#39;, &#39;);
+    }
+    const convertToReadableTime = (dateTimeStr: string) =&gt; {
+        const date = new Date(dateTimeStr);
+        const options: Intl.DateTimeFormatOptions = {
+            hour: &#39;numeric&#39;,
+            minute: &#39;2-digit&#39;,
+            hour12: true,
+        };
+        return date.toLocaleString(&#39;en-US&#39;, options);
+    }
+
+    const selectedDayTpl = (day: WeatherDayI) =&gt; {
+        if (isToday(day.time)) {
+            return (
+                //TODO: Replace it to apply the button styles or themes.
+                &lt;div className=&#34;flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f0f2f4] pl-2 pr-4 hover:cursor-pointer&#34;  onClick={() =&gt; onSelectDay(day.key)}&gt;
+                    &lt;div className=&#34;text-[#111518]&#34; data-icon=&#34;Check&#34; data-size=&#34;20px&#34; data-weight=&#34;regular&#34;&gt;{checkIcon()}&lt;/div&gt;
+                    &lt;p className=&#34;text-[#111518] text-sm font-medium leading-normal&#34;&gt;{convertReadableDate(day.time)}&lt;/p&gt;
+                &lt;/div&gt;
+            );
+        } else {
+            return (
+                &lt;div className=&#34;flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f0f2f4] pl-4 pr-4 hover:cursor-pointer&#34; onClick={() =&gt; onSelectDay(day.key)}&gt;
+                    &lt;p className=&#34;text-[#111518] text-sm font-medium leading-normal&#34;&gt;{convertReadableDate(day.time)}&lt;/p&gt;
+                &lt;/div&gt;
+            )
+        }
+    }
+
+    //TODO: Replace the icons with the icons from shared-assets.
+    const evenoddIcon = () =&gt; {
+        return (
+            &lt;svg viewBox=&#34;0 0 48 48&#34; fill=&#34;none&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;
+                &lt;path fill-rule=&#34;evenodd&#34; clip-rule=&#34;evenodd&#34; d=&#34;M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z&#34; fill=&#34;currentColor&#34;&gt;&lt;/path&gt;
+            &lt;/svg&gt;
+        )
+    }
+    const sunriseIcon = () =&gt; {
+        return (
+            &lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; width=&#34;24px&#34; height=&#34;24px&#34; fill=&#34;currentColor&#34; viewBox=&#34;0 0 256 256&#34;&gt;
+                &lt;path d=&#34;M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z&#34;&gt;&lt;/path&gt;
+            &lt;/svg&gt;
+        )
+    }
+    const sunsetIcon = () =&gt; {
+        return (
+            &lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; width=&#34;24px&#34; height=&#34;24px&#34; fill=&#34;currentColor&#34; viewBox=&#34;0 0 256 256&#34;&gt;
+                &lt;path d=&#34;M240,152H199.55a73.54,73.54,0,0,0,.45-8,72,72,0,0,0-144,0,73.54,73.54,0,0,0,.45,8H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM72,144a56,56,0,1,1,111.41,8H72.59A56.13,56.13,0,0,1,72,144Zm144,56a8,8,0,0,1-8,8H48a8,8,0,0,1,0-16H208A8,8,0,0,1,216,200ZM72.84,43.58a8,8,0,0,1,14.32-7.16l8,16a8,8,0,0,1-14.32,7.16Zm-56,48.84a8,8,0,0,1,10.74-3.57l16,8a8,8,0,0,1-7.16,14.31l-16-8A8,8,0,0,1,16.84,92.42Zm192,15.16a8,8,0,0,1,3.58-10.73l16-8a8,8,0,1,1,7.16,14.31l-16,8a8,8,0,0,1-10.74-3.58Zm-48-55.16,8-16a8,8,0,0,1,14.32,7.16l-8,16a8,8,0,1,1-14.32-7.16Z&#34;&gt;&lt;/path&gt;
+            &lt;/svg&gt;
+        )
+    }
+    const checkIcon = () =&gt; {
+        return (
+            &lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; width=&#34;20px&#34; height=&#34;20px&#34; fill=&#34;currentColor&#34; viewBox=&#34;0 0 256 256&#34;&gt;
+                &lt;path d=&#34;M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z&#34;&gt;&lt;/path&gt;
+            &lt;/svg&gt;
+        )
+    }
+
+    //TODO: Replace to use the translations.
+    const weatherForecast = () =&gt; {
+        return (&lt;h2 className=&#34;text-lg font-bold leading-tight tracking-[-0.015em]&#34;&gt;Weather Forecast&lt;/h2&gt;)
+    }
+    const sunrise = () =&gt; {
+        return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Sunrise&lt;/p&gt;)
+    }
+    const sunset = () =&gt; {
+        return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Sunset&lt;/p&gt;)
+    }
+    const elevation = () =&gt; {
+        return(&lt;p className=&#34;text-base font-normal leading-normal pb-3 pt-1 px-4&#34;&gt;Elevation: {dayData.elevation}m&lt;/p&gt;)
+    }
+
+    // Ui component for Layout
+    const contentUiLayout = (dayData:  WeatherDayI, weekWeather:  WeatherDayI[]) =&gt; {
+        return (
+            &lt;div className=&#34;relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden&#34; style=&#123;&#123; fontFamily: &#39;&#34;Work Sans&#34;, &#34;Noto Sans&#34;, sans-serif&#39; }}&gt;
+                &lt;div className=&#34;layout-container flex h-full grow flex-col&#34;&gt;
+                    &lt;header className=&#34;flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] px-10 py-3&#34;&gt;
+                        &lt;div className=&#34;flex items-center gap-4&#34;&gt;
+                            &lt;div className=&#34;size-4&#34;&gt;{evenoddIcon()}&lt;/div&gt;
+                            {weatherForecast()}
+                        &lt;/div&gt;
+                    &lt;/header&gt;
+                    &lt;div className=&#34;px-40 flex flex-1 justify-center py-5&#34;&gt;
+                        &lt;div className=&#34;layout-content-container flex flex-col max-w-[960px] flex-1&#34;&gt;
+                            &lt;div className=&#34;flex gap-3 p-3 overflow-x-hidden&#34;&gt;
+                                {
+                                    weekWeather.map((day: WeatherDayI) =&gt; (
+                                        selectedDayTpl(day)
+                                    ))
+                                }
+                            &lt;/div&gt;
+                            &lt;h2 className=&#34;text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5&#34;&gt;{convertReadableDate(dayData.time)} - {dayData.timezone}&lt;/h2&gt;
+                            &lt;div className=&#34;flex flex-wrap gap-4 p-4&#34;&gt;
+                                &lt;div className=&#34;flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#dce1e5]&#34;&gt;
+                                    &lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Min&lt;/p&gt;
+                                    &lt;p className=&#34;tracking-light text-2xl font-bold leading-tight&#34;&gt;{dayData.temperature.min} °C&lt;/p&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#dce1e5]&#34;&gt;
+                                    &lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Max&lt;/p&gt;
+                                    &lt;p className=&#34;tracking-light text-2xl font-bold leading-tight&#34;&gt;{dayData.temperature.max} °C&lt;/p&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;div className=&#34;grid grid-cols-[40px_1fr] gap-x-2 px-4&#34;&gt;
+                                &lt;div className=&#34;flex flex-col items-center gap-1 pt-3&#34;&gt;
+                                    &lt;div data-icon=&#34;Sun&#34; data-size=&#34;24px&#34; data-weight=&#34;regular&#34;&gt;{sunriseIcon()}&lt;/div&gt;
+                                    &lt;div className=&#34;w-[1.5px] bg-[#dce1e5] h-2 grow&#34;&gt;&lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-1 flex-col py-3&#34;&gt;
+                                    {sunrise()}
+                                    &lt;p className=&#34;text-[#637788] text-base font-normal leading-normal&#34;&gt;{convertToReadableTime(dayData.sunrise)}&lt;/p&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-col items-center gap-1 pb-3&#34;&gt;
+                                    &lt;div className=&#34;w-[1.5px] bg-[#dce1e5] h-2&#34;&gt;&lt;/div&gt;
+                                    &lt;div data-icon=&#34;SunHorizon&#34; data-size=&#34;24px&#34; data-weight=&#34;regular&#34;&gt;{sunsetIcon()}&lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-1 flex-col py-3&#34;&gt;
+                                    {sunset()}
+                                    &lt;p className=&#34;text-[#637788] text-base font-normal leading-normal&#34;&gt;{convertToReadableTime(dayData.sunset)}&lt;/p&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            {elevation()}
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        )
+    }
+
+    // Render component once dayData is available
+    //TODO: Replace for Scaffold
+    return dayData &amp;&amp; weekWeather ?
+        (contentUiLayout(dayData, weekWeather)) :
+        (&lt;&gt;Loading&lt;/&gt;); // Show loading state while data is being fetched
+}
+
+export default Layout;
+</code></pre>
+<p>Refresh your browser and you should see something like the following:</p>
+<p class="image-container"><img alt="Screenshot" src="img/65733118a9fec878.png"></p>
+<h2 is-upgraded>Part-by-Part Breakdown</h2>
+<ol type="1">
+<li><strong>Props &amp; State Initialization</strong></li>
+</ol>
+<ul>
+<li>props: <strong>LayoutI</strong> defines a callback onSelectDay that accepts a date string.</li>
+<li>Uses <strong>useParams()</strong> to extract forecastDay from the route URL.</li>
+<li>Sets up a reference weatherStore with useRef() holding an instance of WeatherStore.</li>
+<li>Uses <strong>useStoreState()</strong> to access weekWeather from the store.</li>
+</ul>
+<ol type="1" start="2">
+<li><strong>Default dayData Initialization</strong> :Defines a default dayData object with blank or zero properties to avoid errors if data isn&#39;t loaded yet.</li>
+<li><strong>Finding the Current Day&#39;s Weather Data</strong>: Checks if weekWeather contains data. Depending on if forecastDay exists: Finds the corresponding weather data for forecastDay. Defaults to the first weather entry if no forecastDay is provided. Uses optional chaining and fallback (??) for safe data retrieval.</li>
+<li><strong>Utility Functions</strong><ul>
+<li><strong>isToday(date: string):</strong> Checks if a given date is today&#39;s date for UI highlighting.</li>
+<li><strong>convertReadableDate(dateString: string):</strong> Converts a date string like ‘2025-08-07&#39; to a more readable form, e.g., ‘Aug 7&#39;.</li>
+<li><strong>convertToReadableTime(dateTimeStr: string):</strong> Converts a datetime string into a readable time (e.g., ‘6:00 AM&#39;).</li>
+</ul>
+</li>
+<li><strong>Rendering selectedDayTpl</strong><ul>
+<li><strong>Renders a clickable UI element for each day:</strong><ul>
+<li>Highlights current day with a check mark SVG.</li>
+</ul>
+</li>
+<li><strong>Displays a formatted date.</strong><ul>
+<li>Calls onSelectDay(day.key) when clicked to trigger parent update.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Main JSX Output</strong>: Checks if dayData and weekWeather are present.If data is present: Renders a full page layout styled with Tailwind CSS.<strong>Contains:</strong><ul>
+<li>Header with a weather icon and title.</li>
+<li>Navigation bar with the list of days (weekWeather.map() and selectedDayTpl(day)).</li>
+</ul>
+<strong>Date and Time Info:</strong><ul>
+<li>Shows formatted date, timezone.</li>
+<li>Displays min/max temperatures.</li>
+<li>Additional info: Sunrise, sunset, elevation with icons and SVGs.</li>
+<li>Weather details: Sunrise, Sunset, Elevation with icons, including precise times.</li>
+<li>If data isn&#39;t available, displays ‘Loading&#39;.</li>
+</ul>
+</li>
+</ol>
+<h2 is-upgraded><strong>Summary</strong></h2>
+<p>Manages state and route parameters to determine which weather data to display. Utilizes utility functions for date/time formatting. Defines interactive UI elements for selecting days, highlighting the current day. Displays comprehensive weather info, elevation, sunrise, sunset times.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Routing" duration="7">
+        <h3 is-upgraded>7.1 Update apps/weather/src/app/app.tsx:</h3>
+<pre><code language="language-tsx" class="language-tsx">import {Routes, Route, useNavigate} from &#39;react-router-dom&#39;;
+</code></pre>
+<p>Inside the app:</p>
+<pre><code language="language-tsx" class="language-tsx">const navigate = useNavigate(); // Hook for programmatic navigation between routes
+</code></pre>
+<pre><code language="language-tsx" class="language-tsx">const handleSelectDay = (day: string) =&gt; {
+  navigate(`/weather/${day}`, { replace: true });
+};
+</code></pre>
+<pre><code language="language-tsx" class="language-tsx">&lt;Routes&gt;
+  {/* Root route: shows the main layout and passes the day selection handler */}
+  &lt;Route
+    path=&#34;/&#34;
+    element={&lt;Layout onSelectDay={handleSelectDay} /&gt;}
+  /&gt;
+
+  {/* Dynamic route for a specific forecast day, e.g., &#34;/2025-06-27&#34; */}
+  &lt;Route
+    path=&#34;/:forecastDay&#34;
+    element={&lt;Layout onSelectDay={handleSelectDay} /&gt;}
+  /&gt;
+&lt;/Routes&gt;
+</code></pre>
+<p>app.tsx should look like the following:</p>
+<pre><code language="language-tsx" class="language-tsx">import Layout from &#34;./layout&#34;;
+import { Routes, Route, useNavigate } from &#39;react-router-dom&#39;;
+import { ForecastApi } from &#34;../api/forecast-api&#34;; // Client for fetching weather data
+import { useEffect } from &#34;react&#34;;
+
+/**
+ * The main application component that sets up routing and fetches initial weather data.
+ *
+ * Features:
+ * - Programmatic navigation between weather days via `useNavigate`.
+ * - Fetches weekly weather forecast data on component mount.
+ * - Defines routes:
+ *   - &#34;/&#34; for the main layout, which allows day selection.
+ *   - &#34;/:forecastDay&#34; for displaying weather details for a specific forecast day.
+ *
+ * @returns JSX element with route configuration.
+ */
+export function App() {
+  // Hook for navigating programmatically between routes
+  const navigate = useNavigate();
+
+  /**
+   * Handler invoked when a user selects a different day.
+   * Navigates to the route corresponding to the selected day.
+   *
+   * @param day - Selected day as string (e.g., &#39;2025-08-07&#39;)
+   */
+  const handleSelectDay = (day: string) =&gt; {
+    // Navigate to the route for the selected forecast day
+    navigate(`/weather/${day}`, { replace: true });
+  };
+
+  // Instance of the API client to fetch weather data
+  const weatherApi = new ForecastApi();
+
+  // Fetch weekly weather forecast data once on component mount
+  useEffect(() =&gt; {
+    weatherApi.getWeatherByWeek();
+  }, []);
+
+  // Define application routes
+  return (
+    &lt;Routes&gt;
+      {/* Root route: renders the main layout and passes the day selection handler */}
+      &lt;Route
+        path=&#34;/&#34;
+        element={&lt;Layout onSelectDay={handleSelectDay} /&gt;}
+      /&gt;
+
+      {/* Dynamic route for a specific forecast day, e.g., &#34;/2025-06-27&#34; */}
+      &lt;Route
+        path=&#34;/:forecastDay&#34;
+        element={&lt;Layout onSelectDay={handleSelectDay} /&gt;}
+      /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<h2 is-upgraded><strong>Routing Changes Summary:</strong></h2>
+<ul>
+<li>Changed the routing paths from potentially nested or ambiguous routes to two clear routes:<ul>
+<li><code>'/'</code>: Root route displaying the main <code>Layout</code> component for general weather overview and day selection.</li>
+<li><code>'/:forecastDay'</code>: Dynamic route to display details (e.g., specific date forecast) for a selected day.</li>
+</ul>
+</li>
+<li>Both routes render the same <code>Layout</code> component but with different URL parameters:<ul>
+<li><code>'/'</code> may show default or initial weather data.</li>
+<li><code>'/:forecastDay'</code> dynamically shows weather details for a specific date, using the URL parameter to identify the day.</li>
+</ul>
+</li>
+<li>The <code>handleSelectDay</code> function navigates programmatically to <code>/weather/${day}</code>, which should match the route path.</li>
+</ul>
+<h3 is-upgraded>Update your browser:</h3>
+<p>Now you can select a specific date from the drop down and will see the values are changing accordingly.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="UI Resources" duration="5">
+        <p><code>@btc/shared-assets</code>. In this library, we can share resources like <code>.jpg, .svg, .png, .json</code> and others, to use them in our <code>Nx</code> applications.</p>
+<h2 is-upgraded>8.1 Using <code>@btc/shared-assets</code></h2>
+<ul>
+<li>We will see how to import <code>@btc/shared-assets</code>.</li>
+<li>We will use <code>SVG</code> icons.</li>
+<li>A library called <code>ReactSVG</code>.</li>
+</ul>
+<aside class="warning"><p><strong>️Note:<br></strong></p>
+<p>For images or icons in <code>JPG</code> or <code>PNG</code>, we don&#39;t need used this library <code>ReactSVG</code>, we can use the classic <code>img</code> from <code>HTML</code>.</p>
+</aside>
+<h3 is-upgraded>Import shared-assets</h3>
+<p>In this case, we will do the import in the <code>layout.tsx</code>.</p>
+<h2 is-upgraded>8.2 Update weather/src/app/layout.tsx</h2>
+<pre><code language="language-tsx" class="language-tsx">import { images, weatherIcon } from &#34;@btc/shared-assets&#34;
+
+// For SVG icons
+import {ReactSVG} from &#34;react-svg&#34;; 
+</code></pre>
+<aside class="warning"><p><strong>️Note:<br></strong></p>
+<p>If you need to add a new image used in all apps, see <a href="https://github.com/tierconnect/bt-ui-apps/tree/feature/tutorial/docs/sharedAssets" target="_blank">Assets</a>.</p>
+</aside>
+<p>So, once we have the correct imports, we will replace the following lines of code:</p>
+<pre><code language="language-html" class="language-html">//TODO: Replace the icons with the icons from shared-assets.
+const evenoddIcon = () =&gt; {
+    return (
+        &lt;svg viewBox=&#34;0 0 48 48&#34; fill=&#34;none&#34; xmlns=&#34;http://www.w3.org/2000/svg&#34;&gt;
+            &lt;path fill-rule=&#34;evenodd&#34; clip-rule=&#34;evenodd&#34; d=&#34;M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z&#34; fill=&#34;currentColor&#34;&gt;&lt;/path&gt;
+        &lt;/svg&gt;
+    )
+}
+const sunriseIcon = () =&gt; {
+    return (
+        &lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; width=&#34;24px&#34; height=&#34;24px&#34; fill=&#34;currentColor&#34; viewBox=&#34;0 0 256 256&#34;&gt;
+            &lt;path d=&#34;M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z&#34;&gt;&lt;/path&gt;
+        &lt;/svg&gt;
+    )
+}
+const sunsetIcon = () =&gt; {
+    return (
+        &lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; width=&#34;24px&#34; height=&#34;24px&#34; fill=&#34;currentColor&#34; viewBox=&#34;0 0 256 256&#34;&gt;
+            &lt;path d=&#34;M240,152H199.55a73.54,73.54,0,0,0,.45-8,72,72,0,0,0-144,0,73.54,73.54,0,0,0,.45,8H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM72,144a56,56,0,1,1,111.41,8H72.59A56.13,56.13,0,0,1,72,144Zm144,56a8,8,0,0,1-8,8H48a8,8,0,0,1,0-16H208A8,8,0,0,1,216,200ZM72.84,43.58a8,8,0,0,1,14.32-7.16l8,16a8,8,0,0,1-14.32,7.16Zm-56,48.84a8,8,0,0,1,10.74-3.57l16,8a8,8,0,0,1-7.16,14.31l-16-8A8,8,0,0,1,16.84,92.42Zm192,15.16a8,8,0,0,1,3.58-10.73l16-8a8,8,0,1,1,7.16,14.31l-16,8a8,8,0,0,1-10.74-3.58Zm-48-55.16,8-16a8,8,0,0,1,14.32,7.16l-8,16a8,8,0,1,1-14.32-7.16Z&#34;&gt;&lt;/path&gt;
+        &lt;/svg&gt;
+    )
+}
+const checkIcon = () =&gt; {
+    return (
+        &lt;svg xmlns=&#34;http://www.w3.org/2000/svg&#34; width=&#34;20px&#34; height=&#34;20px&#34; fill=&#34;currentColor&#34; viewBox=&#34;0 0 256 256&#34;&gt;
+            &lt;path d=&#34;M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z&#34;&gt;&lt;/path&gt;
+        &lt;/svg&gt;
+    )
+}
+</code></pre>
+<p>with:</p>
+<pre><code language="language-tsx" class="language-tsx">//TODO: Replace the icons with the icons from shared-assets.
+const evenoddIcon = () =&gt; {
+    return (
+        &lt;ReactSVG src={images.envenodd} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+    )
+}
+const sunriseIcon = () =&gt; {
+    return (
+        &lt;ReactSVG src={weatherIcon.sunrise} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+    )
+}
+const sunsetIcon = () =&gt; {
+    return (
+        &lt;ReactSVG src={weatherIcon.sunset} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+    )
+}
+const checkIcon = () =&gt; {
+    return (
+        &lt;ReactSVG src={images.check} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+    )
+}
+</code></pre>
+<p>Stop serving the app (cmd+c).</p>
+<p>To apply the changes correctly and make sure the libraries are imported properly, use:</p>
+<p>Refresh the NX cache:</p>
+<pre><code language="language-tsx" class="language-tsx">nx reset
+</code></pre>
+<p>Build all modules</p>
+<pre><code language="language-bash" class="language-bash">nx run-many -t build
+</code></pre>
+<p>Serve the shell app</p>
+<pre><code language="language-bash" class="language-bash">nx serve shell
+</code></pre>
+<p>The result of the changes should look like the following image: <img alt="Screenshot" src="img/fab12d51647f6509.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Localization" duration="5">
+        <ul>
+<li>We will see where we need to include the translation.</li>
+<li>Import the library react-i18next.</li>
+<li>Which translation we need to use.</li>
+</ul>
+<h2 is-upgraded>9.1 Update i18next.ts</h2>
+<p>Update this file at <code>shell/src/i18next.ts</code>, add the name of the translation file in our case it is <code>weather</code> in parameter <code>ns</code></p>
+<pre><code language="language-typescript" class="language-typescript">ns: [&#39;common&#39;, &#39;vocabulary&#39;, &#39;weather&#39;]
+</code></pre>
+<p>In this line of code, we tell it which translations it should have. In this case, we have <code>common</code>, <code>vocabulary</code>, and the one we need to use is <code>weather</code>.</p>
+<aside class="warning"><p><strong>Note:<br></strong></p>
+<p>If we want to add more translations for <code>weather</code> or any other, follow this: <a href="https://github.com/tierconnect/bt-ui-apps/blob/feature/tutorial/docs/i18n/README.md" target="_blank">Translations</a></p>
+</aside>
+<h2 is-upgraded>9.2 Import react-i18next</h2>
+<p>To use translations in weather/src/app/layout.tsx add:</p>
+<ul>
+<li><code>import {useTranslation} from "react-i18next";</code></li>
+<li>Use a <code>const</code> for <code>useTranslation</code> e.g.: <code>const { t } = useTranslation();</code></li>
+<li>Use <code>t('${namespace}:${keyTranslation}', '${default}')</code> e.g: <ul>
+<li>Name of the <code>namespace</code> or group of translations (for example, <code>weather</code>, <code>common</code>, etc.).</li>
+<li><code>${keyTranslation}</code>: specific translation key (for example, <code>temperature</code>, <code>greeting</code>, etc.).</li>
+<li><code>${default}</code>: default text that will show if the translation is not found.</li>
+</ul>
+</li>
+</ul>
+<p>So, we will implement it in the following way:</p>
+<h2 is-upgraded>9.3 Update apps/weather/src/app/layout.tsx file</h2>
+<pre><code language="language-tsx" class="language-tsx">import {useTranslation} from &#34;react-i18next&#34;;
+</code></pre>
+<p>Inside the layout function:</p>
+<pre><code language="language-tsx" class="language-tsx">const { t } = useTranslation();
+</code></pre>
+<p>We will replace the following lines of code:</p>
+<pre><code language="language-html" class="language-html">//TODO: Replace to use the translations.
+const weatherForecast = () =&gt; {
+    return (&lt;h2 className=&#34;text-lg font-bold leading-tight tracking-[-0.015em]&#34;&gt;Weather Forecast&lt;/h2&gt;)
+}
+const sunrise = () =&gt; {
+    return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Sunrise&lt;/p&gt;)
+}
+const sunset = () =&gt; {
+    return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Sunset&lt;/p&gt;)
+}
+const elevation = () =&gt; {
+    return(&lt;p className=&#34;text-base font-normal leading-normal pb-3 pt-1 px-4&#34;&gt;Elevation: {dayData.elevation}m&lt;/p&gt;)
+}
+</code></pre>
+<p>with:</p>
+<pre><code language="language-tsx" class="language-tsx">//TODO: Replace to use the translations.
+const weatherForecast = () =&gt; {
+    return (&lt;p className=&#34;text-lg font-bold leading-tight tracking-[-0.015em]&#34;&gt;{t(&#39;weather:forecast&#39;, &#39;Weather Forecast&#39;)}&lt;/p&gt;)
+}
+const sunrise = () =&gt; {
+    return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;{t(&#39;weather:sunrise&#39;, &#39;Sunrise&#39;)}&lt;/p&gt;)
+}
+const sunset = () =&gt; {
+    return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;{t(&#39;weather:sunset&#39;, &#39;Sunset&#39;)}&lt;/p&gt;)
+}
+const elevation = () =&gt; {
+    return(&lt;p className=&#34;text-base font-normal leading-normal pb-3 pt-1 px-4&#34;&gt;{t(&#39;weather:elevation&#39;, &#39;Elevation&#39;)}: {dayData.elevation}m&lt;/p&gt;)
+}
+</code></pre>
+<p>And our result should be the following (you can switch between languages from the top menu):</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>English</p>
+</td><td colspan="1" rowspan="1"><p>Spanish</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p class="image-container"><img alt="Screenshot" src="img/12b031d2c5059281.png"></p>
+</td><td colspan="1" rowspan="1"><p class="image-container"><img alt="Screenshot" src="img/5f7bff2930321514.png"></p>
+</td></tr>
+</table>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Theming" duration="5">
+        <ul>
+<li>We will use our <code>Scaffold</code> that comes from our library <code>@btc/react-components</code>.</li>
+<li>We will change lines of code to make the theme more noticeable.</li>
+</ul>
+<aside class="warning"><p><strong>Note:<br></strong></p>
+<p>If you want to learn more about theming, please read the following article: <a href="https://github.com/tierconnect/bt-ui-apps/blob/feature/tutorial/docs/theme/README.md" target="_blank">Theming</a></p>
+</aside>
+<p> ### 10.1 Scaffold Our `Scaffold` is a component that includes parameters like: `className`, `sidebar`, `navbar`, `content`. - `sidebar`: Shows the side menu. - `navbar`: Shows the top navigation bar. - `content`: Displays the main content area.   For this example we will only use the `content` </p>
+<h2 is-upgraded>10.2 Update <code>apps/weather/src/app/layout.tsx</code>:</h2>
+<p>Use the <code>Scaffold</code> component from <code>@btc/react-components</code> to apply the theme, e.g. <code>import { Scaffold } from '@btc/react-components';</code>. Then, use it like this in the <code>html</code>:</p>
+<pre><code language="language-tsx" class="language-tsx">import { Scaffold } from &#39;@btc/react-components&#39;;
+</code></pre>
+<p>Using Scaffold</p>
+<pre><code language="language-html" class="language-html">&lt;Scaffold
+        content={
+&lt;&gt;
+{/* Your layout code here */}
+&lt;/&gt;
+}
+/&gt;
+</code></pre>
+<p>Then, inside the content, replace or add your design. The Scaffold will apply the style to it.</p>
+<h3 is-upgraded>10.2.1 Replace this:</h3>
+<pre><code language="language-ts" class="language-ts">//TODO: Replace for Scaffold
+return dayData &amp;&amp; weekWeather ?
+  (contentUiLayout(dayData, weekWeather)) :
+  (&lt;&gt;Loading&lt;/&gt;); // Show loading state while data is being fetched
+</code></pre>
+<p>with:</p>
+<pre><code language="language-tsx" class="language-tsx"> return dayData &amp;&amp; weekWeather ?
+  &lt;Scaffold
+    content={
+      &lt;&gt;
+        {contentUiLayout(dayData, weekWeather)}
+      &lt;/&gt;
+    }
+  /&gt; :
+  (&lt;&gt;Loading&lt;/&gt;); // Show loading state while data is being fetched
+</code></pre>
+<h3 is-upgraded>10.2.2 Update the method</h3>
+<p><strong><code>selectedDayTpl</code></strong> to show an icon when the selected day is active:**</p>
+<pre><code language="language-html" class="language-html">//TODO: Replace it to apply the button styles or themes.
+&lt;div className=&#34;flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f0f2f4] pl-2 pr-4 hover:cursor-pointer&#34;  onClick={() =&gt; onSelectDay(day.key)}&gt;
+    &lt;div className=&#34;text-[#111518]&#34; data-icon=&#34;Check&#34; data-size=&#34;20px&#34; data-weight=&#34;regular&#34;&gt;{checkIcon()}&lt;/div&gt;
+    &lt;p className=&#34;text-[#111518] text-sm font-medium leading-normal&#34;&gt;{convertReadableDate(day.time)}&lt;/p&gt;
+&lt;/div&gt;
+</code></pre>
+<p>with:</p>
+<pre><code language="language-tsx" class="language-tsx">&lt;button className=&#34;flex h-8 &#34;&gt;
+  &lt;div className=&#34;flex flex-row items-center justify-center&#34;&gt;
+     {checkIcon()}
+    {convertReadableDate(day.time)}
+  &lt;/div&gt;
+&lt;/button&gt;
+</code></pre>
+<h2 is-upgraded>10.3 Final Result</h2>
+<p>Your layout now includes:</p>
+<ul>
+<li>Shared image and icon assets (you can check svg definitions following <code>shared-assets/resources/src/lib/images.ts</code> exports)</li>
+<li>i18n support with translation files</li>
+<li>The definition of the translations are located at: <ul>
+<li>shared-assets/resources/src/assets/i18n/locales/en/weather.json</li>
+<li>shared-assets/resources/src/assets/i18n/locales/es/weather.json</li>
+</ul>
+</li>
+<li>Theme layout using Scaffold</li>
+<li>Interactive date selection You can now continue enhancing your UI.</li>
+</ul>
+<aside class="warning"><p><strong>Note:<br>   </strong></p>
+<ul>
+<li>To make sure the <code>Scaffold</code> applies the theme correctly, check if it has any background or text color styles.<br> If it does, remove them.<br></li>
+<li>If you want the icon to react the same way with the theme, just remove the colors.</li>
+</ul>
+</aside>
+<p>Complete code up to here:</p>
+<pre><code language="language-tsx" class="language-tsx">import {useRef} from &#34;react&#34;;
+import { WeatherStore } from &#34;../stores/weather.store&#34;;
+import { useStoreState } from &#34;@btc/react-hooks&#34;;
+import { WeatherDayI } from &#34;../interfaces/forecast.interface&#34;;
+import { useParams } from &#34;react-router-dom&#34;;
+import { images, weatherIcon } from &#34;@btc/shared-assets&#34;
+import { Scaffold } from &#39;@btc/react-components&#39;;
+
+// For SVG icons
+import {ReactSVG} from &#34;react-svg&#34;;
+import {useTranslation} from &#34;react-i18next&#34;;
+
+/**
+ * Props interface for the Layout component.
+ * - onSelectDay: Callback function invoked when a day is selected,
+ *   receives the selected day&#39;s date string (e.g., &#39;2025-08-07&#39;).
+ */
+interface LayoutI {
+    onSelectDay: (day: string) =&gt; void;
+}
+
+/**
+ * Layout component that displays weather information for a selected day,
+ * allowing the user to select different days from a dropdown.
+ *
+ * @param props - Properties including onSelectDay callback.
+ * @returns JSX element rendering the weather details or a loading state.
+ */
+export function Layout(props: LayoutI) {
+    const { t } = useTranslation();
+    const { onSelectDay } = props;
+    // Extract forecastDay parameter from URL
+    const { forecastDay } = useParams();
+
+    // Initialize weather store instance
+    const weatherStore = useRef(new WeatherStore());
+
+    // Access weekWeather state from the store
+    const { weekWeather } = useStoreState(weatherStore.current);
+
+    let dayData: WeatherDayI = {
+        elevation: 0,
+        key: &#34;&#34;,
+        sunrise: &#34;&#34;,
+        sunriseTime: &#34;&#34;,
+        sunset: &#34;&#34;,
+        sunsetTime: &#34;&#34;,
+        temperature: {max: 0, min: 0},
+        time: &#34;&#34;,
+        timezone: &#34;&#34;
+    };
+
+    // Find weather data for the selected or default day
+    if (weekWeather?.length) {
+        if (forecastDay) {
+            dayData = weekWeather.find(item =&gt; item.key === forecastDay) ?? weekWeather[0];
+        } else {
+            // Default to the first item if forecastDay isn&#39;t provided
+            dayData = weekWeather[0];
+        }
+    }
+    const isToday = (date: string) =&gt; {
+        return date === dayData.time;
+    }
+    const convertReadableDate = (dateString: string) =&gt; {
+        const [year, month, day] = dateString.split(&#39;-&#39;).map(Number);
+        // Create date in local timezone
+        const date = new Date(year, month - 1, day);
+        const options = { month: &#39;short&#39;, day: &#39;numeric&#39; } as const;
+        return date.toLocaleString(&#39;en-US&#39;, options).replace(&#39; &#39;, &#39;, &#39;);
+    }
+    const convertToReadableTime = (dateTimeStr: string) =&gt; {
+        const date = new Date(dateTimeStr);
+        const options: Intl.DateTimeFormatOptions = {
+            hour: &#39;numeric&#39;,
+            minute: &#39;2-digit&#39;,
+            hour12: true,
+        };
+        return date.toLocaleString(&#39;en-US&#39;, options);
+    }
+
+    const selectedDayTpl = (day: WeatherDayI) =&gt; {
+        if (isToday(day.time)) {
+            return (
+                //TODO: Replace it to apply the button styles or themes.
+                &lt;button className=&#34;flex h-8 &#34;&gt;
+                    &lt;div className=&#34;flex flex-row items-center justify-center&#34;&gt;
+                        {checkIcon()}
+                        {convertReadableDate(day.time)}
+                    &lt;/div&gt;
+                &lt;/button&gt;
+            );
+        } else {
+            return (
+                &lt;div className=&#34;flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f0f2f4] pl-4 pr-4 hover:cursor-pointer&#34; onClick={() =&gt; onSelectDay(day.key)}&gt;
+                    &lt;p className=&#34;text-[#111518] text-sm font-medium leading-normal&#34;&gt;{convertReadableDate(day.time)}&lt;/p&gt;
+                &lt;/div&gt;
+            )
+        }
+    }
+
+    //TODO: Replace the icons with the icons from shared-assets.
+    const evenoddIcon = () =&gt; {
+        return (
+            &lt;ReactSVG src={images.envenodd} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+        )
+    }
+    const sunriseIcon = () =&gt; {
+        return (
+            &lt;ReactSVG src={weatherIcon.sunrise} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+        )
+    }
+    const sunsetIcon = () =&gt; {
+        return (
+            &lt;ReactSVG src={weatherIcon.sunset} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+        )
+    }
+    const checkIcon = () =&gt; {
+        return (
+            &lt;ReactSVG src={images.check} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+        )
+    }
+
+    //TODO: Replace to use the translations.
+    const weatherForecast = () =&gt; {
+        return (&lt;p className=&#34;text-lg font-bold leading-tight tracking-[-0.015em]&#34;&gt;{t(&#39;weather:forecast&#39;, &#39;Weather Forecast&#39;)}&lt;/p&gt;)
+    }
+    const sunrise = () =&gt; {
+        return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;{t(&#39;weather:sunrise&#39;, &#39;Sunrise&#39;)}&lt;/p&gt;)
+    }
+    const sunset = () =&gt; {
+        return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;{t(&#39;weather:sunset&#39;, &#39;Sunset&#39;)}&lt;/p&gt;)
+    }
+    const elevation = () =&gt; {
+        return(&lt;p className=&#34;text-base font-normal leading-normal pb-3 pt-1 px-4&#34;&gt;{t(&#39;weather:elevation&#39;, &#39;Elevation&#39;)}: {dayData.elevation}m&lt;/p&gt;)
+    }
+
+    // Ui component for Layout
+    const contentUiLayout = (dayData:  WeatherDayI, weekWeather:  WeatherDayI[]) =&gt; {
+        return (
+            &lt;div className=&#34;relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden&#34; style=&#123;&#123; fontFamily: &#39;&#34;Work Sans&#34;, &#34;Noto Sans&#34;, sans-serif&#39; }}&gt;
+                &lt;div className=&#34;layout-container flex h-full grow flex-col&#34;&gt;
+                    &lt;header className=&#34;flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] px-10 py-3&#34;&gt;
+                        &lt;div className=&#34;flex items-center gap-4&#34;&gt;
+                            &lt;div className=&#34;size-4&#34;&gt;{evenoddIcon()}&lt;/div&gt;
+                            {weatherForecast()}
+                        &lt;/div&gt;
+                    &lt;/header&gt;
+                    &lt;div className=&#34;px-40 flex flex-1 justify-center py-5&#34;&gt;
+                        &lt;div className=&#34;layout-content-container flex flex-col max-w-[960px] flex-1&#34;&gt;
+                            &lt;div className=&#34;flex gap-3 p-3 overflow-x-hidden&#34;&gt;
+                                {
+                                    weekWeather.map((day: WeatherDayI) =&gt; (
+                                        selectedDayTpl(day)
+                                    ))
+                                }
+                            &lt;/div&gt;
+                            &lt;h2 className=&#34;text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5&#34;&gt;{convertReadableDate(dayData.time)} - {dayData.timezone}&lt;/h2&gt;
+                            &lt;div className=&#34;flex flex-wrap gap-4 p-4&#34;&gt;
+                                &lt;div className=&#34;flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#dce1e5]&#34;&gt;
+                                    &lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Min&lt;/p&gt;
+                                    &lt;p className=&#34;tracking-light text-2xl font-bold leading-tight&#34;&gt;{dayData.temperature.min} °C&lt;/p&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#dce1e5]&#34;&gt;
+                                    &lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Max&lt;/p&gt;
+                                    &lt;p className=&#34;tracking-light text-2xl font-bold leading-tight&#34;&gt;{dayData.temperature.max} °C&lt;/p&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;div className=&#34;grid grid-cols-[40px_1fr] gap-x-2 px-4&#34;&gt;
+                                &lt;div className=&#34;flex flex-col items-center gap-1 pt-3&#34;&gt;
+                                    &lt;div data-icon=&#34;Sun&#34; data-size=&#34;24px&#34; data-weight=&#34;regular&#34;&gt;{sunriseIcon()}&lt;/div&gt;
+                                    &lt;div className=&#34;w-[1.5px] bg-[#dce1e5] h-2 grow&#34;&gt;&lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-1 flex-col py-3&#34;&gt;
+                                    {sunrise()}
+                                    &lt;p className=&#34;text-[#637788] text-base font-normal leading-normal&#34;&gt;{convertToReadableTime(dayData.sunrise)}&lt;/p&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-col items-center gap-1 pb-3&#34;&gt;
+                                    &lt;div className=&#34;w-[1.5px] bg-[#dce1e5] h-2&#34;&gt;&lt;/div&gt;
+                                    &lt;div data-icon=&#34;SunHorizon&#34; data-size=&#34;24px&#34; data-weight=&#34;regular&#34;&gt;{sunsetIcon()}&lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-1 flex-col py-3&#34;&gt;
+                                    {sunset()}
+                                    &lt;p className=&#34;text-[#637788] text-base font-normal leading-normal&#34;&gt;{convertToReadableTime(dayData.sunset)}&lt;/p&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            {elevation()}
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        )
+    }
+
+    // Render component once dayData is available
+    //TODO: Replace for Scaffold
+    return dayData &amp;&amp; weekWeather ?
+        &lt;Scaffold
+            content={
+                &lt;&gt;
+                    {contentUiLayout(dayData, weekWeather)}
+                &lt;/&gt;
+            }
+        /&gt; :
+        (&lt;&gt;Loading&lt;/&gt;); // Show loading state while data is being fetched
+}
+
+export default Layout;
+</code></pre>
+<p>You can switch between themes using the top menu selector:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Light mode</p>
+</td><td colspan="1" rowspan="1"><p>Dark mode</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p class="image-container"><img alt="Screenshot" src="img/2d89f541a2cc1c14.png"></p>
+</td><td colspan="1" rowspan="1"><p class="image-container"><img alt="Screenshot" src="img/cc339d198babe006.png"></p>
+</td></tr>
+</table>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Event Manager" duration="5">
+        <h2 is-upgraded>11.1 Add event manager for weather app</h2>
+<p>Create file apps/weather/src/event-manager/weather.event-manager.ts</p>
+<pre><code language="language-tsx" class="language-tsx">import { EventManager } from &#39;@btc/event-manager&#39;; // Importing the singleton event manager
+import { Observable } from &#39;rxjs&#39;; // Importing Observable for asynchronous event handling
+
+/**
+ * WeatherEventManager acts as a wrapper around the EventManager to handle weather-related events.
+ * Provides static methods to publish events and observe specific weather events.
+ */
+export class WeatherEventManager {
+
+  /**
+   * Publishes an event with a specified event ID and associated data.
+   * Uses the singleton EventManager to publish the event.
+   *
+   * @param eventId - Identifier for the event (e.g., &#39;weather:change&#39;)
+   * @param data - Data payload that accompanies the event, of generic type T
+   * @returns The result of the event publish action
+   */
+  static publish&lt;T&gt;(eventId: string, data: T) {
+    return EventManager.getInstance().publish&lt;T&gt;(eventId, data);
+  }
+
+  /**
+   * Creates an observable to listen for &#39;weather:selectDay&#39; events.
+   * Subscribers can listen for when a user or process selects a specific day.
+   *
+   * @returns An Observable that emits a string representing the selected day.
+   */
+  static selectDay(): Observable&lt;string&gt; {
+    return EventManager.getInstance().observe(&#39;weather:selectDay&#39;);
+  }
+}
+</code></pre>
+<h2 is-upgraded><strong>Summary of the Class</strong></h2>
+<p><strong>Purpose:</strong></p>
+<p>The WeatherEventManager class provides a simplified interface to publish and observe weather-related events within the app, leveraging a singleton EventManager.</p>
+<p><strong>Methods:</strong></p>
+<ul>
+<li><strong>publish</strong>(eventId: string, data: T): Sends (publishes) an event identified by eventId along with accompanying data data. Uses a generic type T for flexible data payloads.</li>
+<li><strong>selectDay():</strong> Returns an Observable that emits when the ‘weather:selectDay&#39; event occurs. Used for listening when a user or another process selects a specific weather day.</li>
+<li><strong>Usage:</strong></li>
+</ul>
+<p>To notify other parts of the app that a day has been selected or changed, use publish. To react to a day selection event, subscribe to selectDay().</p>
+<h2 is-upgraded>11.2 Update apps/weather/src/app/app.tsx</h2>
+<p><strong>11.2.1 Add imports</strong></p>
+<pre><code language="language-tsx" class="language-tsx">import {SubSink} from &#34;subsink&#34;;
+import {WeatherEventManager} from &#34;../event-manager/weather.event-manager&#34;;
+</code></pre>
+<p><strong>11.2.2 Update useEffect function:</strong></p>
+<pre><code language="language-tsx" class="language-tsx">// Fetch weekly weather forecast data once on component mount
+useEffect(() =&gt; {
+  weatherApi.getWeatherByWeek();
+  const sub = new SubSink();
+
+  sub.sink = WeatherEventManager.selectDay().subscribe({
+    next: (day) =&gt; {
+      handleSelectDay(day);
+    },
+    error: () =&gt; {
+      console.log(&#39;Error selecting a day&#39;);
+    },
+  });
+
+  return () =&gt; {
+    sub.unsubscribe();
+  };
+}, []);
+</code></pre>
+<h3 is-upgraded>Explanation:</h3>
+<p><strong>Initial Data Fetch:</strong></p>
+<p>‘weatherApi.getWeatherByWeek();` initiates a fetch or request to retrieve weekly weather data from an API.</p>
+<p><strong>Subscription Management:</strong></p>
+<p>A SubSink instance named sub is created to manage subscriptions, ensuring they can be easily cleaned up. Subscribing to Weather Events:</p>
+<p><code>WeatherEventManager.selectDay().subscribe({ ... })</code>  subscribes to an observable that emits when a specific day is selected.</p>
+<p>When a new day value is emitted, handleSelectDay(day) is called to process it. If an error occurs during this subscription, it logs ‘Error selecting a day&#39; via a logger if available.</p>
+<p><strong>Cleanup:</strong></p>
+<p>The function returned by <strong>useEffect (return () =&gt; { ... })</strong> cleans up the subscription by calling sub.unsubscribe(), preventing memory leaks when the component unmounts.</p>
+<p><strong>Empty Dependency Array:</strong> [] indicates this effect runs only once when the component mounts, mimicking componentDidMount.</p>
+<p>Overall, it fetches weekly weather data once on mount, subscribes to day selection events, handles those events, and ensures proper cleanup when the component unmounts.</p>
+<p><strong>11.2.3 Update this code:</strong></p>
+<pre><code language="language-ts" class="language-ts">&lt;Routes&gt;
+  {/* Root route: renders the main layout and passes the day selection handler */}
+&lt;Route
+path=&#34;/&#34;
+element={&lt;Layout onSelectDay={handleSelectDay} /&gt;}
+/&gt;
+
+{/* Dynamic route for a specific forecast day, e.g., &#34;/2025-06-27&#34; */}
+&lt;Route
+  path=&#34;/:forecastDay&#34;
+element={&lt;Layout onSelectDay={handleSelectDay} /&gt;}
+/&gt;
+&lt;/Routes&gt;
+</code></pre>
+<p>to</p>
+<pre><code language="language-tsx" class="language-tsx">&lt;Routes&gt;
+  {/* Root route: renders the main layout and passes the day selection handler */}
+  &lt;Route
+    path=&#34;/&#34;
+    element={&lt;Layout /&gt;}
+  /&gt;
+
+  {/* Dynamic route for a specific forecast day, e.g., &#34;/2025-06-27&#34; */}
+  &lt;Route
+    path=&#34;/:forecastDay&#34;
+    element={&lt;Layout /&gt;}
+  /&gt;
+&lt;/Routes&gt;
+</code></pre>
+<h3 is-upgraded><strong>Explanation:</strong></h3>
+<p>Layout component doesn&#39;t require a prop with the function to select the day since we are now handling it using event manager</p>
+<p>app.tsx should be:</p>
+<pre><code language="language-tsx" class="language-tsx">import Layout from &#34;./layout&#34;;
+import { Routes, Route, useNavigate } from &#39;react-router-dom&#39;;
+import { ForecastApi } from &#34;../api/forecast-api&#34;; // Client for fetching weather data
+import { useEffect } from &#34;react&#34;;
+import {SubSink} from &#34;subsink&#34;;
+import {WeatherEventManager} from &#34;../event-manager/weather.event-manager&#34;;
+
+/**
+ * The main application component that sets up routing and fetches initial weather data.
+ *
+ * Features:
+ * - Programmatic navigation between weather days via `useNavigate`.
+ * - Fetches weekly weather forecast data on component mount.
+ * - Defines routes:
+ *   - &#34;/&#34; for the main layout, which allows day selection.
+ *   - &#34;/:forecastDay&#34; for displaying weather details for a specific forecast day.
+ *
+ * @returns JSX element with route configuration.
+ */
+export function App() {
+  // Hook for navigating programmatically between routes
+  const navigate = useNavigate();
+
+  /**
+   * Handler invoked when a user selects a different day.
+   * Navigates to the route corresponding to the selected day.
+   *
+   * @param day - Selected day as string (e.g., &#39;2025-08-07&#39;)
+   */
+  const handleSelectDay = (day: string) =&gt; {
+    // Navigate to the route for the selected forecast day
+    navigate(`/weather/${day}`, { replace: true });
+  };
+
+  // Instance of the API client to fetch weather data
+  const weatherApi = new ForecastApi();
+
+  // Fetch weekly weather forecast data once on component mount
+  // Fetch weekly weather forecast data once on component mount
+  useEffect(() =&gt; {
+    weatherApi.getWeatherByWeek();
+    const sub = new SubSink();
+
+    sub.sink = WeatherEventManager.selectDay().subscribe({
+      next: (day) =&gt; {
+        handleSelectDay(day);
+      },
+      error: () =&gt; {
+        console.log(&#39;Error selecting a day&#39;);
+      },
+    });
+
+    return () =&gt; {
+      sub.unsubscribe();
+    };
+  }, []);
+
+  // Define application routes
+  return (
+    &lt;Routes&gt;
+      {/* Root route: renders the main layout and passes the day selection handler */}
+      &lt;Route
+        path=&#34;/&#34;
+        element={&lt;Layout /&gt;}
+      /&gt;
+
+      {/* Dynamic route for a specific forecast day, e.g., &#34;/2025-06-27&#34; */}
+      &lt;Route
+        path=&#34;/:forecastDay&#34;
+        element={&lt;Layout /&gt;}
+      /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>We are going to use event manager to select a day.</p>
+<h2 is-upgraded>11.3 Update apps/weather/src/app/layout.tsx</h2>
+<p><strong>11.3.1 Import WeatherEventManager</strong></p>
+<pre><code language="language-tsx" class="language-tsx">import {WeatherEventManager} from &#34;../event-manager/weather.event-manager&#34;;
+</code></pre>
+<p><strong>11.3.2 Add function inside layout</strong></p>
+<pre><code language="language-tsx" class="language-tsx">const selectDay = (day: string) =&gt;{
+  WeatherEventManager.publish(
+    &#39;weather:selectDay&#39;,
+    day
+  );
+}
+</code></pre>
+<p><strong>11.3.3 Change onclick event to use Event Manager</strong></p>
+<p>Instead of:</p>
+<pre><code language="language-ts" class="language-ts">const selectedDayTpl = (day: WeatherDayI) =&gt; {
+    if (isToday(day.time)) {
+        return (
+            //TODO: Replace it to apply the button styles or themes.
+            &lt;button className=&#34;flex h-8 &#34;&gt;
+            &lt;div className=&#34;flex flex-row items-center justify-center&#34;&gt;
+                {checkIcon()}
+        {convertReadableDate(day.time)}
+        &lt;/div&gt;
+        &lt;/button&gt;
+    );
+    } else {
+        return (
+            &lt;div className=&#34;flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f0f2f4] pl-4 pr-4 hover:cursor-pointer&#34; onClick={() =&gt; onSelectDay(day.key)}&gt;
+        &lt;p className=&#34;text-[#111518] text-sm font-medium leading-normal&#34;&gt;{convertReadableDate(day.time)}&lt;/p&gt;
+        &lt;/div&gt;
+    )
+    }
+}
+</code></pre>
+<p>update to:</p>
+<pre><code language="language-tsx" class="language-tsx">const selectedDayTpl = (day: WeatherDayI) =&gt; {
+    if (isToday(day.time)) {
+        return (
+            //TODO: Replace it to apply the button styles or themes.
+            &lt;button className=&#34;flex h-8 &#34;&gt;
+                &lt;div className=&#34;flex flex-row items-center justify-center&#34;&gt;
+                    {checkIcon()}
+                    {convertReadableDate(day.time)}
+                &lt;/div&gt;
+            &lt;/button&gt;
+        );
+    } else {
+        return (
+            &lt;div className=&#34;flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f0f2f4] pl-4 pr-4 hover:cursor-pointer&#34; onClick={() =&gt; selectDay(day.key)}&gt;
+                &lt;p className=&#34;text-[#111518] text-sm font-medium leading-normal&#34;&gt;{convertReadableDate(day.time)}&lt;/p&gt;
+            &lt;/div&gt;
+        )
+    }
+}
+</code></pre>
+<p><strong>11.3.4 Remove line:</strong></p>
+<pre><code language="language-tsx" class="language-tsx">const { onSelectDay } = props;
+</code></pre>
+<p><strong>11.3.5 Update line</strong></p>
+<pre><code language="language-tsx" class="language-tsx">export function Layout(props: LayoutI) { 
+</code></pre>
+<p>to</p>
+<pre><code language="language-tsx" class="language-tsx">export function Layout() {
+</code></pre>
+<p>We don&#39;t need to send any function since events will be now triggered using event manager.</p>
+<p><strong>11.3.6 Also you&#39;ll need to remove the interface:</strong></p>
+<pre><code language="language-tsx" class="language-tsx">interface LayoutI {
+  onSelectDay: (day: string) =&gt; void;
+}
+</code></pre>
+<p><strong>layout.tsx should look like the following:</strong></p>
+<pre><code language="language-tsx" class="language-tsx">import {useRef} from &#34;react&#34;;
+import { WeatherStore } from &#34;../stores/weather.store&#34;;
+import { useStoreState } from &#34;@btc/react-hooks&#34;;
+import { WeatherDayI } from &#34;../interfaces/forecast.interface&#34;;
+import { useParams } from &#34;react-router-dom&#34;;
+import { images, weatherIcon } from &#34;@btc/shared-assets&#34;
+import { Scaffold } from &#39;@btc/react-components&#39;;
+import {useTranslation} from &#34;react-i18next&#34;;
+import {WeatherEventManager} from &#34;../event-manager/weather.event-manager&#34;;
+
+// For SVG icons
+import {ReactSVG} from &#34;react-svg&#34;;
+
+/**
+ * Layout component that displays weather information for a selected day,
+ * allowing the user to select different days from a dropdown.
+ *
+ * @param props - Properties including onSelectDay callback.
+ * @returns JSX element rendering the weather details or a loading state.
+ */
+export function Layout() {
+    const selectDay = (day: string) =&gt;{
+        WeatherEventManager.publish(
+            &#39;weather:selectDay&#39;,
+            day
+        );
+    }
+    const { t } = useTranslation();
+    // Extract forecastDay parameter from URL
+    const { forecastDay } = useParams();
+
+    // Initialize weather store instance
+    const weatherStore = useRef(new WeatherStore());
+
+    // Access weekWeather state from the store
+    const { weekWeather } = useStoreState(weatherStore.current);
+
+    let dayData: WeatherDayI = {
+        elevation: 0,
+        key: &#34;&#34;,
+        sunrise: &#34;&#34;,
+        sunriseTime: &#34;&#34;,
+        sunset: &#34;&#34;,
+        sunsetTime: &#34;&#34;,
+        temperature: {max: 0, min: 0},
+        time: &#34;&#34;,
+        timezone: &#34;&#34;
+    };
+
+    // Find weather data for the selected or default day
+    if (weekWeather?.length) {
+        if (forecastDay) {
+            dayData = weekWeather.find(item =&gt; item.key === forecastDay) ?? weekWeather[0];
+        } else {
+            // Default to the first item if forecastDay isn&#39;t provided
+            dayData = weekWeather[0];
+        }
+    }
+    const isToday = (date: string) =&gt; {
+        return date === dayData.time;
+    }
+    const convertReadableDate = (dateString: string) =&gt; {
+        const [year, month, day] = dateString.split(&#39;-&#39;).map(Number);
+        // Create date in local timezone
+        const date = new Date(year, month - 1, day);
+        const options = { month: &#39;short&#39;, day: &#39;numeric&#39; } as const;
+        return date.toLocaleString(&#39;en-US&#39;, options).replace(&#39; &#39;, &#39;, &#39;);
+    }
+    const convertToReadableTime = (dateTimeStr: string) =&gt; {
+        const date = new Date(dateTimeStr);
+        const options: Intl.DateTimeFormatOptions = {
+            hour: &#39;numeric&#39;,
+            minute: &#39;2-digit&#39;,
+            hour12: true,
+        };
+        return date.toLocaleString(&#39;en-US&#39;, options);
+    }
+
+    const selectedDayTpl = (day: WeatherDayI) =&gt; {
+        if (isToday(day.time)) {
+            return (
+                //TODO: Replace it to apply the button styles or themes.
+                &lt;button className=&#34;flex h-8 &#34;&gt;
+                    &lt;div className=&#34;flex flex-row items-center justify-center&#34;&gt;
+                        {checkIcon()}
+                        {convertReadableDate(day.time)}
+                    &lt;/div&gt;
+                &lt;/button&gt;
+            );
+        } else {
+            return (
+                &lt;div className=&#34;flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#f0f2f4] pl-4 pr-4 hover:cursor-pointer&#34; onClick={() =&gt; selectDay(day.key)}&gt;
+                    &lt;p className=&#34;text-[#111518] text-sm font-medium leading-normal&#34;&gt;{convertReadableDate(day.time)}&lt;/p&gt;
+                &lt;/div&gt;
+            )
+        }
+    }
+
+    //TODO: Replace the icons with the icons from shared-assets.
+    const evenoddIcon = () =&gt; {
+        return (
+            &lt;ReactSVG src={images.envenodd} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+        )
+    }
+    const sunriseIcon = () =&gt; {
+        return (
+            &lt;ReactSVG src={weatherIcon.sunrise} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+        )
+    }
+    const sunsetIcon = () =&gt; {
+        return (
+            &lt;ReactSVG src={weatherIcon.sunset} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+        )
+    }
+    const checkIcon = () =&gt; {
+        return (
+            &lt;ReactSVG src={images.check} style=&#123;&#123;width: &#34;32px&#34;, height: &#34;32px&#34;, color: &#34;red&#34;}}/&gt;
+        )
+    }
+
+    //TODO: Replace to use the translations.
+    const weatherForecast = () =&gt; {
+        return (&lt;p className=&#34;text-lg font-bold leading-tight tracking-[-0.015em]&#34;&gt;{t(&#39;weather:forecast&#39;, &#39;Weather Forecast&#39;)}&lt;/p&gt;)
+    }
+    const sunrise = () =&gt; {
+        return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;{t(&#39;weather:sunrise&#39;, &#39;Sunrise&#39;)}&lt;/p&gt;)
+    }
+    const sunset = () =&gt; {
+        return (&lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;{t(&#39;weather:sunset&#39;, &#39;Sunset&#39;)}&lt;/p&gt;)
+    }
+    const elevation = () =&gt; {
+        return(&lt;p className=&#34;text-base font-normal leading-normal pb-3 pt-1 px-4&#34;&gt;{t(&#39;weather:elevation&#39;, &#39;Elevation&#39;)}: {dayData.elevation}m&lt;/p&gt;)
+    }
+
+    // Ui component for Layout
+    const contentUiLayout = (dayData:  WeatherDayI, weekWeather:  WeatherDayI[]) =&gt; {
+        return (
+            &lt;div className=&#34;relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden&#34; style=&#123;&#123; fontFamily: &#39;&#34;Work Sans&#34;, &#34;Noto Sans&#34;, sans-serif&#39; }}&gt;
+                &lt;div className=&#34;layout-container flex h-full grow flex-col&#34;&gt;
+                    &lt;header className=&#34;flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] px-10 py-3&#34;&gt;
+                        &lt;div className=&#34;flex items-center gap-4&#34;&gt;
+                            &lt;div className=&#34;size-4&#34;&gt;{evenoddIcon()}&lt;/div&gt;
+                            {weatherForecast()}
+                        &lt;/div&gt;
+                    &lt;/header&gt;
+                    &lt;div className=&#34;px-40 flex flex-1 justify-center py-5&#34;&gt;
+                        &lt;div className=&#34;layout-content-container flex flex-col max-w-[960px] flex-1&#34;&gt;
+                            &lt;div className=&#34;flex gap-3 p-3 overflow-x-hidden&#34;&gt;
+                                {
+                                    weekWeather.map((day: WeatherDayI) =&gt; (
+                                        selectedDayTpl(day)
+                                    ))
+                                }
+                            &lt;/div&gt;
+                            &lt;h2 className=&#34;text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5&#34;&gt;{convertReadableDate(dayData.time)} - {dayData.timezone}&lt;/h2&gt;
+                            &lt;div className=&#34;flex flex-wrap gap-4 p-4&#34;&gt;
+                                &lt;div className=&#34;flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#dce1e5]&#34;&gt;
+                                    &lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Min&lt;/p&gt;
+                                    &lt;p className=&#34;tracking-light text-2xl font-bold leading-tight&#34;&gt;{dayData.temperature.min} °C&lt;/p&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex min-w-[158px] flex-1 flex-col gap-2 rounded-lg p-6 border border-[#dce1e5]&#34;&gt;
+                                    &lt;p className=&#34;text-base font-medium leading-normal&#34;&gt;Max&lt;/p&gt;
+                                    &lt;p className=&#34;tracking-light text-2xl font-bold leading-tight&#34;&gt;{dayData.temperature.max} °C&lt;/p&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            &lt;div className=&#34;grid grid-cols-[40px_1fr] gap-x-2 px-4&#34;&gt;
+                                &lt;div className=&#34;flex flex-col items-center gap-1 pt-3&#34;&gt;
+                                    &lt;div data-icon=&#34;Sun&#34; data-size=&#34;24px&#34; data-weight=&#34;regular&#34;&gt;{sunriseIcon()}&lt;/div&gt;
+                                    &lt;div className=&#34;w-[1.5px] bg-[#dce1e5] h-2 grow&#34;&gt;&lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-1 flex-col py-3&#34;&gt;
+                                    {sunrise()}
+                                    &lt;p className=&#34;text-[#637788] text-base font-normal leading-normal&#34;&gt;{convertToReadableTime(dayData.sunrise)}&lt;/p&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-col items-center gap-1 pb-3&#34;&gt;
+                                    &lt;div className=&#34;w-[1.5px] bg-[#dce1e5] h-2&#34;&gt;&lt;/div&gt;
+                                    &lt;div data-icon=&#34;SunHorizon&#34; data-size=&#34;24px&#34; data-weight=&#34;regular&#34;&gt;{sunsetIcon()}&lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div className=&#34;flex flex-1 flex-col py-3&#34;&gt;
+                                    {sunset()}
+                                    &lt;p className=&#34;text-[#637788] text-base font-normal leading-normal&#34;&gt;{convertToReadableTime(dayData.sunset)}&lt;/p&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                            {elevation()}
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        )
+    }
+
+    // Render component once dayData is available
+    //TODO: Replace for Scaffold
+    return dayData &amp;&amp; weekWeather ?
+        &lt;Scaffold
+            content={
+                &lt;&gt;
+                    {contentUiLayout(dayData, weekWeather)}
+                &lt;/&gt;
+            }
+        /&gt; :
+        (&lt;&gt;Loading&lt;/&gt;); // Show loading state while data is being fetched
+}
+
+export default Layout;
+</code></pre>
+<h2 is-upgraded><strong>Event Management Summary</strong></h2>
+<ol type="1">
+<li>Event Publisher (WeatherEventManager) The WeatherEventManager class provides a static method publish(eventId, data) to emit events. It internally utilizes a singleton EventManager to publish events with a specified eventId and accompanying data. It also provides a method selectDay() that returns an Observable, which emits when a ‘weather:selectDay&#39; event is triggered.</li>
+<li>Event Subscriber (in App component) Inside the App component, useEffect sets up an event subscription: It calls WeatherEventManager.selectDay() to subscribe to ‘weather:selectDay&#39; events. When such an event occurs, it invokes handleSelectDay(day) with the emitted day string. This triggers navigation to the corresponding route (/weather/${day}). It manages the subscription lifecycle with SubSink to automatically unsubscribe on component unmount.</li>
+<li><strong>Flow of Event Handling</strong><strong>When a user interacts with the Layout component (layout.tsx):</strong><ul>
+<li>The Layout component calls WeatherEventManager.publish(‘weather:selectDay&#39;, day) with the selected day string.</li>
+</ul>
+<strong>The App component, listening via selectDay(), reacts to this event:</strong><ul>
+<li>Navigates to the route for the selected day, updating the URL (/weather/${day}).</li>
+</ul>
+<strong>This creates a decoupled interaction:</strong><ul>
+<li>The UI component (Layout) does not directly control navigation.</li>
+<li>Instead, it emits an event.</li>
+<li>The top-level app subscribes and responds to events, enabling a clean separation of concerns.</li>
+</ul>
+</li>
+</ol>
+<h3 is-upgraded><strong>Summary Highlights</strong></h3>
+<p><strong>Decoupled communication:</strong></p>
+<p>Event publisher (WeatherEventManager.publish) and subscriber (WeatherEventManager.selectDay) facilitate loose coupling.</p>
+<p><strong>Reactive updates:</strong></p>
+<p>The app reacts to day selection events asynchronously via RxJS Observables.</p>
+<p><strong>Centralized event management:</strong></p>
+<p>Uses a singleton EventManager to handle all event emissions and subscriptions.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Troubleshooting &amp; Debugging Tips" duration="0">
+        <p>Building complex applications with BTC UI, Nx, React, and Tailwind can sometimes lead to issues. Here are some common problems and practical tips to troubleshoot and debug effectively.</p>
+<h2 is-upgraded>Troubleshooting</h2>
+<p>a. Nx Commands Not Working Properly</p>
+<ul>
+<li><strong>Solution:</strong> Sometimes Nx caches build artifacts or dependencies. Run:</li>
+</ul>
+<pre><code language="language-bash" class="language-bash">nx reset
+</code></pre>
+<p>b. Module Not Found / Import Errors</p>
+<ul>
+<li><strong>Cause:</strong>  Changes in paths or newly generated modules may not be recognized.</li>
+<li><strong>Solution:</strong>  Ensure <strong>tsconfig.base.json</strong> paths are correctly updated and run:</li>
+</ul>
+<pre><code language="language-bash" class="language-bash">nx run-many -t build 
+</code></pre>
+<ul>
+<li>For IDE issues, restart the editor or TypeScript server. c. Components Not Updating (Hot Reload Fails)</li>
+<li><strong>Solution:</strong>  Sometimes hot reload misses updates, especially with lazy-loaded modules.</li>
+<li>Restart the development server<a href="..%2F..%2F..%2F..%2F..%2FDownloads%2Ftutorial.md" target="_blank">tutorial.md</a></li>
+</ul>
+<pre><code language="language-bash" class="language-bash">nx serve shell
+</code></pre>
+<ul>
+<li>Clear cache and rebuild:</li>
+</ul>
+<pre><code language="language-bash" class="language-bash">nx reset
+</code></pre>
+<pre><code language="language-bash" class="language-bash">nx run-many -t build
+</code></pre>
+<p>Error: Module not found: Error: Can&#39;t resolve ‘/Module&#39; in ...</p>
+<p>Make sure you have added back &#34;exclude&#34;: [&#34;node_modules&#34;, &#34;tmp&#34;] to the tsconfig.base.json file.</p>
+<p>You can try with the commands to find out more:</p>
+<pre><code language="language-bash" class="language-bash">nx reset
+</code></pre>
+<pre><code language="language-bash" class="language-bash">npm i
+</code></pre>
+<pre><code language="language-bash" class="language-bash">nx build &lt;remote-name&gt;
+</code></pre>
+<aside class="warning"><p><strong>⚠️Warning:<br>   </strong></p>
+<pre><code>[createGlobPatternsForDependencies] Failed to generate glob pattern for the following:
+</code></pre>
+<p>You need to add the following to your package.json for that specific library: package.json &gt; nx &gt; sourceRoot: ,</p>
+<pre><code>Failed to parse source map from .../node_modules/... Error: EN OENT: no such file or directory, open .../node_modules/...
+</code></pre>
+<p>You need to add the following line to your specific webpack.config.ts inside composePlugins: withBtcWebpackConfig()</p>
+<pre><code>Affected criteria defaulted to --base=main --head=HEAD
+fatal: ambiguous argument &#39;main&#39;: unknown revision or path not in the working tree.
+Use &#39;--&#39; to separate paths from revisions, like this:
+&#39;git &lt;command&gt; [&lt;revision&gt;...] -- [&lt;file&gt;...]&#39;
+NX   Command failed: git diff --name-only --no-renames --relative &#34;main&#34; &#34;HEAD&#34;
+fatal: ambiguous argument &#39;main&#39;: unknown revision or path not in the working tree.
+Use &#39;--&#39; to separate paths from revisions, like this:
+&#39;git &lt;command&gt; [&lt;revision&gt;...] -- [&lt;file&gt;...]&#39;
+Pass --verbose to see the stacktrace.
+</code></pre>
+<p>This means that you are not on the main branch, or that the main branch does not exist. Make sure you have the main branch checked out as local previously, or that you are on a branch that has the main branch as its base.</p>
+</aside>
+<h2 is-upgraded>Best Practices for Robust Development</h2>
+<p><strong>Incremental Changes:</strong> Make small, isolated changes and test frequently.</p>
+<p><strong>Use Typings Rigorously:</strong> Proper TypeScript types can prevent many runtime errors.</p>
+<p><strong>Component Isolation:</strong> Test components independently with stories or dummy data.</p>
+<p><strong>Unit Tests:</strong> Write tests to catch regressions early.</p>
+<p><strong>Keep Dependencies Updated:</strong> Regularly update Nx, React, Tailwind, and other libraries to benefit from bug fixes and improvements.</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
